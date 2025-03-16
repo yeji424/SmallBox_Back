@@ -32,7 +32,28 @@ public class MemberService {
 		// 0. email로 userId 조회
 		Integer userId = memberDao.getUserIdByEmail(email);
 		
-		// 1. userId로 salt 찾아옴
+		// 회원 존재 여부 먼저 확인
+	    if (userId == null) {
+	        throw new Exception("존재하지 않는 이메일입니다. 회원가입을 먼저 해주세요.");
+	    }
+	    
+	    // 계정 잠김 확인
+	    Integer lockedStatus = loginDao.isAccountLocked(email);
+	    boolean isLocked = lockedStatus != null && lockedStatus == 1;
+	    
+	    // 잠겼으면
+	    if (isLocked) {
+	        Date lastAttempt = loginDao.getLastAttempt(email);
+	        long lockTime = (new Date().getTime() - lastAttempt.getTime()) / (1000 * 60);
+
+	        if (lockTime < 10) {
+	            throw new Exception("로그인 횟수 초과로 계정이 잠겼습니다. " + (10 - lockTime) + "분 후 다시 시도해주세요.");
+	        } else {
+	            loginDao.resetLoginAttempt(email); // 10분 후 계정 잠금 해제 (잠금 여부 삭제)
+	        }
+	    }
+	    
+	    // 1. userId로 salt 찾아옴
 		SaltInfo saltInfo=saltDao.selectSalt(userId);
 		// 2. pwd 가져와서
 		String pwd = m.getPwd();
@@ -44,10 +65,24 @@ public class MemberService {
 		
 		m=memberDao.tokenLogin(m);
 		
-		if(m!=null) {
+		// 비번 틀렸으면
+		if(m == null) {
+		    loginDao.updateLoginAttempt(email); // 시도 횟수 증가
+
+		    // 업데이트된 로그인 시도 횟수 다시 조회 (최신 값 가져오기)
+		    Integer attemptCount = loginDao.getLoginAttemptCount(email);
+			// 5번째 시도에서 틀리면 즉시 계정 잠금
+			if(attemptCount != null && attemptCount >= 5) {
+				loginDao.lockAccount(email);
+				throw new Exception("로그인 횟수 초과로 계정이 잠겼습니다.");
+			}
+			
+			throw new Exception("이메일 또는 비밀번호가 올바르지 않습니다.");
+		} else {
+			loginDao.resetLoginAttempt(email);
 			String userName=m.getUserName();
 			if(userName!=null && !userName.trim().equals("")) {
-				//member table에서 email과 pwd가 확인된 상황 즉 login ok
+				//member table에서 email로 확인한 userId과 pwd가 확인된 상황 즉 login ok
 
 				// 해시토큰 생성
 				// 1. salt 생성

@@ -25,4 +25,34 @@
   	set loginTime = current_timestamp
   	where token=#{token}
   </update>
+  
+  <update id="updateLoginAttempt" parameterType="String">
+  	insert into loginAttempt (email, attemptCount, lastAttempt)
+  	values (#{email}, 1, current_timestamp)
+  	on duplicate key update
+  	attemptCount = attemptCount + 1, lastAttempt = current_timestamp;
+  	  </update>
+  
+  <delete id="resetLoginAttempt" parameterType="String">
+  	delete from loginAttempt where email=#{email}
+  </delete>
+  
+  <select id="getLoginAttemptCount" parameterType="String" resultType="int">
+  	select attemptCount from loginAttempt where email=#{email};
+  </select>
+  
+  <update id="lockAccount" parameterType="String">
+   update loginAttempt 
+   set isLocked = 1, lastAttempt = current_timestamp
+   where email = #{email};
+  </update>
+  
+   <select id="getLastAttempt" parameterType="String" resultType="Date">
+  	select lastAttempt from loginAttempt
+  	where email=#{email};
+  </select>
+  
+  <select id="isAccountLocked" parameterType="String" resultType="int">
+  	select coalesce(isLocked, 0) from loginAttempt where email=#{email};
+  </select>
 </mapper>
