@@ -12,5 +12,5 @@ public interface MemberDao {
 	
 	public Member tokenLogin(Member m) throws Exception;
 
-	public int getUserIdByEmail(String email) throws Exception;
+	public Integer getUserIdByEmail(String email) throws Exception;
 }

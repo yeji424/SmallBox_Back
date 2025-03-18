@@ -31,14 +31,14 @@ public class AuthFilter implements Filter {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
 
-        // ✅ CORS 응답 헤더 추가
+        // CORS 응답 헤더 추가
         httpResponse.setHeader("Access-Control-Allow-Origin", "http://127.0.0.1:5500");
         httpResponse.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
         httpResponse.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type");
         httpResponse.setHeader("Access-Control-Expose-Headers", "Authorization");
         httpResponse.setHeader("Access-Control-Allow-Credentials", "true");
 
-        // ✅ CORS preflight (OPTIONS 요청) 처리
+        // CORS preflight (OPTIONS 요청) 처리
         if (httpRequest.getMethod().equalsIgnoreCase("OPTIONS")) {
             httpResponse.setStatus(HttpServletResponse.SC_OK);
             return;
