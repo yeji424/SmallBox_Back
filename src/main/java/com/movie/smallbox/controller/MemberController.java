@@ -26,18 +26,27 @@ public class MemberController {
 	MemberService memberService;
 	
 	@PostMapping("insertMember")
-	public Map<String, String> insertMember(@Valid @RequestBody Member m){
-		Map<String, String> responseData = new HashMap();
-		
-		try {
-			memberService.insertMember(m);
-			responseData.put("msg", "회원가입을 축하합니다.");
-			
-		} catch(Exception e) {
-			e.printStackTrace();
-			responseData.put("msg", "회원가입 중 오류가 발생했습니다.");
-		}
-		return responseData;
+	public Map<String, String> insertMember(@Valid @RequestBody Member m) {
+	    Map<String, String> responseData = new HashMap<>();
+
+	    try {
+	        memberService.insertMember(m);
+	        responseData.put("msg", "회원가입을 축하합니다.");
+	    } catch (Exception e) {
+	        String errorMsg = e.getMessage();
+
+	        if (errorMsg.contains("이미 가입된 이메일")) {
+	            responseData.put("msg", "이미 가입된 이메일입니다. 로그인을 진행해 주세요.");
+	        } else if (errorMsg.contains("유효하지 않은 이메일 형식")) {
+	            responseData.put("msg", "이메일 형식이 올바르지 않습니다.");
+	        } else if (errorMsg.contains("비밀번호는 8자리 이상")) {
+	            responseData.put("msg", "비밀번호는 8자리 이상이며, 숫자와 특수문자를 포함해야 합니다.");
+	        } else {
+	            responseData.put("msg", "회원가입 중 오류가 발생했습니다.");
+	        }
+	    }
+
+	    return responseData;
 	}
 	
 	
@@ -63,11 +72,9 @@ public class MemberController {
 	            errorMsg = "알 수 없는 오류가 발생했습니다.";
 	        }
 
-	        System.out.println("에러 메시지 (가공 전): " + errorMsg); // 디버깅 로그 추가
-
 	        // 예외 메시지 가공 후 반환
 	        if (errorMsg.contains("존재하지 않는 이메일")) {
-	        	responseData.put("msg", "존재하지 않는 이메일입니다. 회원가입을 먼저 해주세요.");
+	        	responseData.put("msg", "존재하지 않는 회원입니다. 회원가입을 먼저 해주세요.");
 	            responseData.put("redirect", "register.html"); // 회원가입 페이지로 이동
 	        } else if (errorMsg.contains("로그인 횟수 초과로 계정이 잠겼습니다")) {
 	            responseData.put("msg", "로그인 시도 횟수를 초과하여 계정이 잠겼습니다. 잠시 후 다시 시도해주세요.");
@@ -76,8 +83,6 @@ public class MemberController {
 	        } else {
 	            responseData.put("msg", "로그인 중 오류가 발생했습니다.");
 	        }
-
-	        System.out.println("에러 메시지 (가공 후): " + responseData.get("msg"));
 	    }
 
 	    return responseData;
@@ -89,10 +94,8 @@ public class MemberController {
 		try {
 			Integer userId = (int) request.getAttribute("userId");
 			
-	        // System.out.println("User ID in logout: " + userId);
-
 	        if (userId == null) {
-	            responseData.put("msg", "로그아웃 실패: 유효하지 않은 사용자입니다.");
+	            responseData.put("msg", "세션이 만료되었습니다. 다시 로그인 해주세요.");
 	            return responseData;
 	        }
 			
