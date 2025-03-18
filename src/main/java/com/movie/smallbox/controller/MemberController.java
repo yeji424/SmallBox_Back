@@ -64,7 +64,15 @@ public class MemberController {
 	public Map<String, String> logout (HttpServletRequest request) {
 		Map<String, String> responseData = new HashMap();
 		try {
-			int userId = (int) request.getAttribute("userId");
+			Integer userId = (int) request.getAttribute("userId");
+			
+	        System.out.println("User ID in logout: " + userId); // 🔍 로그 추가
+
+	        if (userId == null) {
+	            responseData.put("msg", "로그아웃 실패: 유효하지 않은 사용자입니다.");
+	            return responseData;
+	        }
+			
 			memberService.logout(userId);
 			responseData.put("msg", "로그아웃에 성공했습니다.");
 		} catch (Exception e) {
