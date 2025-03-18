@@ -4,6 +4,7 @@ import java.util.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -39,6 +40,12 @@ public class ReservationController {
 			// 이러면 해커가 조작 못함
 			reservation.setUserId(userId);
 			
+			// 좌석 선택 안햇을 때 : null값 체크
+	        if (reservation.getSeatNumbers() == null || reservation.getSeatNumbers().isEmpty()) {
+	            responseData.put("msg", "좌석을 선택해주세요.");
+	            return responseData;
+	        }
+			
 			// 예매 로직
 			// 잠시 확인용 보안때문에 나중에 바꿀거임
             String result = reservationService.reservation(reservation);
@@ -64,4 +71,29 @@ public class ReservationController {
 		}
 		return responseData;
 	}
+	
+	@PostMapping("bookedSeats")
+	public Map<String, Object> getBookedSeats(@RequestBody Map<String, String> requestData) {
+	    Map<String, Object> responseData = new HashMap<>();
+
+	    try {
+	        // 요청 데이터에서 극장명과 상영 시간 추출
+	        String theaterName = requestData.get("theaterName");
+	        String scheduleTime = requestData.get("scheduleTime");
+
+	        Map<String, Object> params = new HashMap<>();
+	        params.put("theaterName", theaterName);
+	        params.put("scheduleTime", scheduleTime);
+
+	        // 예약된 좌석 목록 가져오기
+	        List<String> bookedSeats = reservationService.getBookedSeats(params);
+	        responseData.put("bookedSeats", bookedSeats);
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        responseData.put("msg", "예매된 좌석 조회 중 오류 발생");
+	    }
+
+	    return responseData;
+	}
+
 }

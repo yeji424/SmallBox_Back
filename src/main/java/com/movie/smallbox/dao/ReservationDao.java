@@ -8,9 +8,14 @@ import com.movie.smallbox.dto.Reservation;
 
 @Mapper
 public interface ReservationDao {
-	void insertReservation(Reservation reservation) throws Exception;
-	List<Reservation> getReservation(int userId) throws Exception;
+    void insertReservation(List<Reservation> reservations) throws Exception;
+    
+    List<Reservation> getReservation(int userId) throws Exception;	
 	
-	// Mybatis는 boolean 제공 안함 service에서 boolean으로 처리 예정
+    // Mybatis는 boolean 제공 안함 service에서 boolean으로 처리 예정
 	int isSeatBooked(Map<String, Object> bookingInfo) throws Exception;
+	
+	// 이선좌 표시 리스트
+	List<String> getBookedSeats(Map<String, Object> bookingInfo) throws Exception;
+
 }

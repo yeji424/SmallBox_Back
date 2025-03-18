@@ -5,13 +5,21 @@
   
 <mapper namespace="com.movie.smallbox.dao.ReservationDao">
   
-<insert id="insertReservation" parameterType="Reservation">
+<insert id="insertReservation" parameterType="list">
 	insert into reservation(userId, movieTitle, theaterName, scheduleTime, seatNumber)
-	values (#{userId}, #{movieTitle}, #{theaterName}, #{scheduleTime}, #{seatNumber})
+	values
+    <foreach collection="reservations" item="reservation" separator=",">
+        (#{reservation.userId}, #{reservation.movieTitle}, #{reservation.theaterName}, #{reservation.scheduleTime}, #{reservation.seatNumbers[0]})
+    </foreach>
 </insert>
 
 <select id="getReservation" parameterType="int" resultType="Reservation">
-	select * from reservation where userId = #{userId} order by bookingTime DESC
+    SELECT MIN(reservationId) AS reservationId, userId, movieTitle, theaterName, scheduleTime, 
+           GROUP_CONCAT(seatNumber ORDER BY seatNumber ASC) AS seatNumbersStr, bookingTime
+    FROM reservation
+    WHERE userId = #{userId}
+    GROUP BY bookingTime, movieTitle, theaterName, scheduleTime, userId
+    ORDER BY bookingTime DESC
 </select>
 
 <select id="isSeatBooked" parameterType="map" resultType="int">
@@ -20,4 +28,11 @@
     and scheduleTime = #{scheduleTime}
     and seatNumber = #{seatNumber}
 </select>
+
+<select id="getBookedSeats" parameterType="map" resultType="string">
+    select seatNumber from reservation
+    where theaterName = #{theaterName}
+    and scheduleTime = #{scheduleTime}
+</select>
+
 </mapper>
