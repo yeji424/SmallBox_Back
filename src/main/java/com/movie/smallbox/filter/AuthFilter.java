@@ -59,10 +59,15 @@ public class AuthFilter implements Filter {
         }
 
         // 로그인 검증이 필요한 API만 필터 적용
-        if (requestURI.startsWith("/reservation") || requestURI.startsWith("/myReservation") || requestURI.startsWith("/logout")) {
+        // 여기에 체크토큰 추가했슴당
+        if (requestURI.startsWith("/reservation") || requestURI.startsWith("/myReservation") || requestURI.startsWith("/logout") || requestURI.startsWith("/checkSession")) {
+
+            // System.out.println("**** AuthFilter: 요청 URI : " + requestURI);
+            // System.out.println("**** AuthFilter: 받은 토큰 : " + token);
 
             // 토큰이 없으면 로그인 요청 유도
             if (token == null || token.trim().isEmpty()) {
+                // System.out.println("**** AuthFilter: 토큰 없음, 401 반환");
                 httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 httpResponse.getWriter().write("{\"msg\":\"로그인 먼저 해주세요.\"}");
                 return;
@@ -71,36 +76,45 @@ public class AuthFilter implements Filter {
             try {
                 // 토큰으로 userId 조회 후 컨트롤러에서 사용 가능하도록 저장
                 int userId = memberService.getUserIdFromToken(token);
+                // System.out.println("**** AuthFilter: userId 조회 : " + userId);
 
                 // 로그인 시간 가져오기
                 Date lastLoginTime = memberService.getLoginTimeByToken(token);
+                // System.out.println("**** AuthFilter: 로그인 시간 : " + lastLoginTime);
+
+                
+                // 로그인 기록 없을 때 (사실 분리되는게 맞는 거 같은데 없앴다가 망가질까 무서워서 놔둡니다)
                 if (lastLoginTime == null) {
+                    // System.out.println("**** AuthFilter: loginTIme 삭제됨, 세션 만료 처리");
                     memberService.logout(userId);
                     httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     httpResponse.getWriter().write("{\"msg\":\"세션이 만료되었습니다. 다시 로그인해주세요.\"}");
                     return;
                 }
 
+                // 로그인 기록 만료되었을 때
                 // 현재 시간과 비교하여 30분 이상 지났는지 확인
                 long timeDiff = (new Date().getTime() - lastLoginTime.getTime()) / 1000; // 초 단위
                 if (timeDiff > 1800) { // 30분 초과
+                    // System.out.println("**** AuthFilter: 세션 만료, 401 반환");
                     memberService.logout(userId);
                     httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     httpResponse.getWriter().write("{\"msg\":\"세션이 만료되었습니다. 다시 로그인해주세요.\"}");
                     return;
                 }
 
+                
                 // 30분이 지나지 않았을 때만 loginTime 갱신
-                if (timeDiff <= 1800) { 
-                    memberService.updateLoginTime(token);
-                }
+                memberService.updateLoginTime(token);
+                // System.out.println("**** AuthFilter: LoginTime 업데이트 완료");
 
                 // 컨트롤러에서 userId를 사용할 수 있도록 설정
                 httpRequest.setAttribute("userId", userId);
 
             } catch (Exception e) {
                 e.printStackTrace();
-                httpResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                // System.out.println("**** AuthFilter: 예외 발생, 401 반환");
+                httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 httpResponse.getWriter().write("{\"msg\":\"서버 오류 발생.\"}");
                 return;
             }
