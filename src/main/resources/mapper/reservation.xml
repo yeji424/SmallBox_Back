@@ -2,37 +2,37 @@
 <!DOCTYPE mapper
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
-  
+
 <mapper namespace="com.movie.smallbox.dao.ReservationDao">
-  
+
 <insert id="insertReservation" parameterType="list">
-	insert into reservation(userId, movieTitle, theaterName, scheduleTime, seatNumber)
-	values
+    INSERT INTO reservation(userId, movieTitle, theaterName, scheduleTime, seatNumber, movieId)
+    VALUES
     <foreach collection="reservations" item="reservation" separator=",">
-        (#{reservation.userId}, #{reservation.movieTitle}, #{reservation.theaterName}, #{reservation.scheduleTime}, #{reservation.seatNumbers[0]})
+        (#{reservation.userId}, #{reservation.movieTitle}, #{reservation.theaterName}, #{reservation.scheduleTime}, #{reservation.seatNumbers[0]}, #{reservation.movieId})
     </foreach>
 </insert>
 
 <select id="getReservation" parameterType="int" resultType="Reservation">
-    SELECT MIN(reservationId) AS reservationId, userId, movieTitle, theaterName, scheduleTime, 
-           GROUP_CONCAT(seatNumber ORDER BY seatNumber ASC) AS seatNumbersStr, bookingTime
+    SELECT MIN(reservationId) AS reservationId, userId, movieTitle, theaterName, scheduleTime,
+           GROUP_CONCAT(seatNumber ORDER BY seatNumber ASC) AS seatNumbersStr, bookingTime, movieId
     FROM reservation
     WHERE userId = #{userId}
-    GROUP BY bookingTime, movieTitle, theaterName, scheduleTime, userId
+    GROUP BY bookingTime, movieTitle, theaterName, scheduleTime, userId, movieId
     ORDER BY bookingTime DESC
 </select>
 
 <select id="isSeatBooked" parameterType="map" resultType="int">
-	select count(*) from reservation
-	where theaterName = #{theaterName}
-    and scheduleTime = #{scheduleTime}
-    and seatNumber = #{seatNumber}
+    SELECT count(*) FROM reservation
+    WHERE theaterName = #{theaterName}
+    AND scheduleTime = #{scheduleTime}
+    AND seatNumber = #{seatNumber}
 </select>
 
 <select id="getBookedSeats" parameterType="map" resultType="string">
-    select seatNumber from reservation
-    where theaterName = #{theaterName}
-    and scheduleTime = #{scheduleTime}
+    SELECT seatNumber FROM reservation
+    WHERE theaterName = #{theaterName}
+    AND scheduleTime = #{scheduleTime}
 </select>
 
 </mapper>

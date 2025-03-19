@@ -24,7 +24,7 @@ public class ReservationService {
         List<String> seatNumbers = reservation.getSeatNumbers();
 
         List<Reservation> reservations = new ArrayList<>();
-        
+         
         for (String seat : seatNumbers) {
             Map<String, Object> bookingInfo = new HashMap<>();
             bookingInfo.put("theaterName", reservation.getTheaterName());
@@ -45,7 +45,7 @@ public class ReservationService {
             newReservation.setScheduleTime(reservation.getScheduleTime());
             newReservation.setSeatNumbers(List.of(seat)); // 좌석 한 개씩 저장
             newReservation.setBookingTime(new Date());
-
+            newReservation.setMovieId(reservation.getMovieId()); // movieId 설정
             reservations.add(newReservation);
         }
 
@@ -53,7 +53,7 @@ public class ReservationService {
         reservationDao.insertReservation(reservations);
         return "예매 성공";
     }
-	
+   
     // 요기 수정했어요 DB에서 받아온 문자열 쉼표로 분할해서 리스트 타입으로 변환!!
     public List<Reservation> getReservation(int userId) throws Exception {
         List<Reservation> reservations = reservationDao.getReservation(userId);
@@ -70,8 +70,8 @@ public class ReservationService {
         return reservations;
     }
 
-	
-	public List<String> getBookedSeats(Map<String, Object> bookingInfo) throws Exception {
-	    return reservationDao.getBookedSeats(bookingInfo);
-	}
+   
+   public List<String> getBookedSeats(Map<String, Object> bookingInfo) throws Exception {
+       return reservationDao.getBookedSeats(bookingInfo);
+   }
 }
