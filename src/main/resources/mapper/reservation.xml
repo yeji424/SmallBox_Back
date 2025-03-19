@@ -35,4 +35,21 @@
     AND scheduleTime = #{scheduleTime}
 </select>
 
+
+<!-- 예약 취소 -->
+<!-- 그룹화된 예약 취소 -->
+<delete id="cancelGroupReservation" parameterType="map">
+	DELETE FROM reservation
+	WHERE userId = #{userId}
+	AND movieTitle = #{movieTitle}
+	AND theaterName = #{theaterName}
+	AND scheduleTime = #{scheduleTime}
+	AND bookingTime = #{bookingTime}
+</delete>
+<!-- 예약 ID로 예약 정보 조회 -->
+<select id="getReservationById" parameterType="int" resultType="Reservation">
+    SELECT * FROM reservation
+    WHERE reservationId = #{reservationId}
+</select>
+
 </mapper>
