@@ -72,6 +72,26 @@ public class ReservationController {
 		return responseData;
 	}
 	
+	@PostMapping("cancelReservation")
+	public Map<String, Object> cancelReservation(HttpServletRequest request, @RequestBody Map<String, Integer> requestData) {
+	    Map<String, Object> responseData = new HashMap<>();
+	    
+	    try {
+	        int userId = (int) request.getAttribute("userId"); // 세션에서 사용자 ID 가져오기
+	        int reservationId = requestData.get("reservationId"); // 요청 데이터에서 예약 ID 가져오기
+	        
+	        // 예약 취소 서비스 호출
+	        Map<String, Object> result = reservationService.cancelReservation(reservationId, userId);
+	        
+	        return result; // 서비스에서 반환한 결과를 그대로 클라이언트에 전달
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        responseData.put("success", false);
+	        responseData.put("message", "예약 취소 중 오류가 발생했습니다.");
+	        return responseData;
+	    }
+	}
+	
 	@PostMapping("bookedSeats")
 	public Map<String, Object> getBookedSeats(@RequestBody Map<String, String> requestData) {
 	    Map<String, Object> responseData = new HashMap<>();

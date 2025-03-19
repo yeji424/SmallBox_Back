@@ -60,7 +60,7 @@ public class AuthFilter implements Filter {
 
         // 로그인 검증이 필요한 API만 필터 적용
         // 여기에 체크토큰 추가했슴당
-        if (requestURI.startsWith("/reservation") || requestURI.startsWith("/myReservation") || requestURI.startsWith("/logout") || requestURI.startsWith("/checkSession")) {
+        if (requestURI.startsWith("/reservation") || requestURI.startsWith("/myReservation") || requestURI.startsWith("/logout") || requestURI.startsWith("/checkSession") || requestURI.startsWith("/cancelReservation"))  {
 
             // System.out.println("**** AuthFilter: 요청 URI : " + requestURI);
             // System.out.println("**** AuthFilter: 받은 토큰 : " + token);
