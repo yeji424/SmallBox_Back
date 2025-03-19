@@ -87,12 +87,12 @@ public class MemberService {
 				// 해시토큰 생성
 				// 1. salt 생성
 				String salt=UUID.randomUUID().toString();
-				System.out.println("salt : " +salt);
+				// System.out.println("salt : " +salt);
 				// 2. email hashing
 				byte[] originalHash=OpenCrypt.getSHA256(String.valueOf(userId), salt);
 				// 3. db에 저장하기 좋은 포맷으로 인코딩
 				String token=OpenCrypt.byteArrayToHex(originalHash);
-				System.out.println("token : "+token);
+				// System.out.println("token : "+token);
 				// 4. login table에 token 저장
 				Login loginInfo=new Login(userId, token, userName, new Date());
 				loginDao.insertToken(loginInfo);
@@ -120,12 +120,12 @@ public class MemberService {
 		// pwd 암호화
 		// 1. salt 생성
 		String salt = UUID.randomUUID().toString();
-		System.out.println("salt:"+salt);
+		// System.out.println("salt:"+salt);
 		// 2. pwd hashing
 		byte[] originalHash=OpenCrypt.getSHA256(pwd, salt);
 		// 3. db에 저장하기 좋은 포맷으로 인코딩
 		String pwdHash=OpenCrypt.byteArrayToHex(originalHash);
-		System.out.println("pwdHash : "+pwdHash);
+		// System.out.println("pwdHash : "+pwdHash);
 		// 4. pwd를 pwdHash값으로 저장
 		m.setPwd(pwdHash);
 		// 5. saltInfo table에 salt정보 따로 저장
@@ -152,13 +152,24 @@ public class MemberService {
     }
 	// 로그인 타임 가져오기
     public Date getLoginTimeByToken(String authorization) throws Exception {
-        return loginDao.getLoginTimeByToken(authorization);
+        Date loginTime = loginDao.getLoginTimeByToken(authorization);
+
+    	
+    	// System.out.println("**** MemberService : 받은 토큰 : " + authorization);
+        // System.out.println("**** MemberService : LoginTIme 조회 : " + loginTime);
+
+    	
+    	return loginTime;
     }
     
     public int getUserIdFromToken(String authorization) throws Exception {
-        // 보안때매 많은게 바뀌어서여.. 바로 userId 조회로 변경했슴다...
         Integer userId = loginDao.getUserIdByToken(authorization);
+
+        // System.out.println("**** MemberService : 받은 토큰 : " + authorization);
+        // System.out.println("**** MemberService : userId 조회 : " + userId);
+
         if (userId == null) {
+            // System.out.println("**** MemberService: 유효하지 않은 토큰");
             throw new Exception("유효하지 않은 토큰입니다.");
         }
         return userId;

@@ -4,7 +4,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -106,5 +109,22 @@ public class MemberController {
 			responseData.put("msg", "로그아웃에 실패했습니다.");
 		}
 		return responseData; 
+	}
+	
+	// 프론트에서 401을 기반으로 세션 만료랑 로그인을 안 한 상태를 구분해야해서요
+	// HttpStatus 써야돼서 형식이 조금 다릅니당
+	@GetMapping("checkSession")
+	public ResponseEntity<?> checkSession(HttpServletRequest request) {
+	    try {
+	        Integer userId = (Integer) request.getAttribute("userId");
+
+	        if (userId == null) {
+	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("msg", "세션이 만료되었습니다."));
+	        }
+
+	        return ResponseEntity.ok().build(); // 200 OK 응답
+	    } catch (Exception e) {
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("msg", "서버 오류가 발생했습니다."));
+	    }
 	}
 }
