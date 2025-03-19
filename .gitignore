@@ -1,4 +1,6 @@
 **/config/*.properties
+bin/ 
+# 빈폴더추가
 
 HELP.md
 target/
