@@ -42,7 +42,6 @@ create table reservation (
 reservationId int auto_increment primary key,
 userId int not null,
 movieTitle varchar(100) not null,              -- 영화 제목 (API 전달)
-movieId int not null,						   -- movieId 추가 
 theaterName varchar(100) not null,             -- 극장명 (API 전달)
 scheduleTime varchar(20) not null,                -- 상영 시간 (API 전달)
 seatNumber varchar(10) not null,               -- 좌석 번호 (API 전달)
