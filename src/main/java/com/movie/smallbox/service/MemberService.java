@@ -117,26 +117,35 @@ public class MemberService {
 			throw new Exception("패스워드는 8자리 이상이어야 하며, 특수문자와 숫자를 포함해야 합니다.");
 		}
 		
-		// pwd 암호화
-		// 1. salt 생성
-		String salt = UUID.randomUUID().toString();
-		// System.out.println("salt:"+salt);
-		// 2. pwd hashing
-		byte[] originalHash=OpenCrypt.getSHA256(pwd, salt);
-		// 3. db에 저장하기 좋은 포맷으로 인코딩
-		String pwdHash=OpenCrypt.byteArrayToHex(originalHash);
-		// System.out.println("pwdHash : "+pwdHash);
-		// 4. pwd를 pwdHash값으로 저장
-		m.setPwd(pwdHash);
-		// 5. saltInfo table에 salt정보 따로 저장
-		//    주의 : insertMember먼저 하고 insertSalt 진행 (email 때문에)
-		memberDao.insertMember(m);
-		
-		// 6. 입력한 email값으로 자동생성된 userId 가져와서
-		int userId = memberDao.getUserIdByEmail(email);
-		
-		// 7. salt값 저장
-		saltDao.insertSalt(new SaltInfo(userId, salt));
+		try {
+			// pwd 암호화
+			// 1. salt 생성
+			String salt = UUID.randomUUID().toString();
+			// System.out.println("salt:"+salt);
+			// 2. pwd hashing
+			byte[] originalHash=OpenCrypt.getSHA256(pwd, salt);
+			// 3. db에 저장하기 좋은 포맷으로 인코딩
+			String pwdHash=OpenCrypt.byteArrayToHex(originalHash);
+			// System.out.println("pwdHash : "+pwdHash);
+			// 4. pwd를 pwdHash값으로 저장
+			m.setPwd(pwdHash);
+			// 5. saltInfo table에 salt정보 따로 저장
+			//    주의 : insertMember먼저 하고 insertSalt 진행 (email 때문에)
+			memberDao.insertMember(m);
+			
+			// 6. 입력한 email값으로 자동생성된 userId 가져와서
+			int userId = memberDao.getUserIdByEmail(email);
+			
+			// 7. salt값 저장
+			saltDao.insertSalt(new SaltInfo(userId, salt));
+			
+		} catch (org.springframework.dao.DuplicateKeyException e) {
+	        throw new Exception("이미 가입된 이메일입니다."); // 이메일 중복 오류 반환
+	    } 
+		catch (Exception e) {
+			throw new Exception("회원가입 중 서버 오류가 발생했습니다.");
+		}
+
 	}
 	
 	public void updateMember(Member m) throws Exception{

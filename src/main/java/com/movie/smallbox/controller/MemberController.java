@@ -29,27 +29,24 @@ public class MemberController {
 	MemberService memberService;
 	
 	@PostMapping("insertMember")
-	public Map<String, String> insertMember(@Valid @RequestBody Member m) {
+	public ResponseEntity<Map<String, String>> insertMember(@Valid @RequestBody Member m) {
 	    Map<String, String> responseData = new HashMap<>();
 
 	    try {
 	        memberService.insertMember(m);
 	        responseData.put("msg", "회원가입을 축하합니다.");
+	        return ResponseEntity.ok(responseData); // 200 OK 응답
 	    } catch (Exception e) {
 	        String errorMsg = e.getMessage();
 
 	        if (errorMsg.contains("이미 가입된 이메일")) {
 	            responseData.put("msg", "이미 가입된 이메일입니다. 로그인을 진행해 주세요.");
-	        } else if (errorMsg.contains("유효하지 않은 이메일 형식")) {
-	            responseData.put("msg", "이메일 형식이 올바르지 않습니다.");
-	        } else if (errorMsg.contains("비밀번호는 8자리 이상")) {
-	            responseData.put("msg", "비밀번호는 8자리 이상이며, 숫자와 특수문자를 포함해야 합니다.");
+	            return ResponseEntity.status(HttpStatus.CONFLICT).body(responseData); // 409 Conflict 응답
 	        } else {
-	            responseData.put("msg", "회원가입 중 오류가 발생했습니다.");
+	            responseData.put("msg", "회원가입 중 서버 오류가 발생했습니다.");
+	            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(responseData); // 500 Internal Server Error
 	        }
 	    }
-
-	    return responseData;
 	}
 	
 	
